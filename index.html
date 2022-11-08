@@ -1,0 +1,106 @@
+<!doctype html>
+  
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My PDF Viewer</title>
+  <!-- google icons link-->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Materialize CSS framework-->
+  <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+  <style>
+        .movable{
+            position:absolute;
+            border-style: double;
+            border-top-right-radius: 5%;
+            background-color: black;
+        }
+        #moveHeader{
+        
+            padding: 10px;
+            cursor: move;
+            z-index: 10;
+            color: #fff;
+            border-style:hidden;
+            border-top-right-radius: 30px;
+        }
+        body{
+            background-color: #f5e7b5 ;
+        }
+    </style>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.0.943/pdf.min.js">
+    </script>
+</head>
+<body ">
+    <div class="row ">
+        <div class="col s2 l2 orange m2">NASLOV</div>
+        <div class="col s1 l1 m2">NASLOV</div>
+        <div class="col s1 l1 m2">NASLOV</div>
+        <div class="col s1 l1 m2">NASLOV</div>
+        <div class="col s1 l1 m2">NASLOV</div>
+        <div class="col s1 l1 m2">NASLOV</div>
+        <div class="col s1 l1 m2">NASLOV</div>
+        <div class="col s1 l1 m2">NASLOV</div>
+        <div class="col s1 l1 m2">NASLOV</div>
+        <div class="col s1 l1 m2">NASLOV</div>
+        <div class="col s1 l1 m2">NASLOV</div>
+    </div>
+    <div class="container ">
+        <div id="move" class="movable row">
+            <div id="moveHeader" class="row">Naslov
+		<button>gumb</button>		
+		</div>
+
+                <iframe id="pdf-js-viewer" src="files/test.pdf" title="webviewer" frameborder="0" width="500" height="600"></iframe>
+            </div>
+            <div id="move2" class="movable row">
+                <div id="moveHeader" class="row">
+                    <div class="col s2">
+                        <p>NASLOV</p>
+                    </div>
+                    
+                </div>
+                <iframe id="pdf-js-viewer" src="files/DN2.pdf" title="webviewer" frameborder="0" width="500" height="600"></iframe>
+             </div>   
+    </div>        
+    
+    <script>
+        dragElement(document.getElementById("move"));
+        dragElement(document.getElementById("move2"));
+        function dragElement(elmnt) {
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            if(document.getElementById(elmnt.id+"Header")){
+                document.getElementById(elmnt.id+"Header").onmousedown = dragMouseDown;
+            } else {
+                elmnt.onmousedown = dragMouseDown;
+            }
+            function dragMouseDown(e){
+                e = e || window.event;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+            function elementDrag(e){
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+            function closeDragElement(){
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+    </script>
+    <!-- materilaze CSS script-->
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+</body>
+</html>
