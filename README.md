@@ -11,3 +11,6 @@ Narejene zadeve:
 4. Izdelava povezav za dodajanje, brisanje, urejanje in branje datotek (CRUD)
 5. Izpis vseh opravil (skupaj s priloženimi pdfji)
 5.1. urejanje omenjenih opravil na zaslonu.
+
+
+tEST
