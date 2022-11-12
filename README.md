@@ -13,4 +13,4 @@ Narejene zadeve:
 5.1. urejanje omenjenih opravil na zaslonu.
 
 
-tEST
+tEST 2
