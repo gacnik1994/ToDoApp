@@ -1,0 +1,539 @@
+<!doctype html >
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>To Do App</title>
+  <!-- google icons link-->
+  <link type="text/css" href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Materialize CSS framework-->
+  <link type="text/css" rel="stylesheet" href="/css/materialize.min.css" >
+  <style>
+        .unclickable{
+            position: fixed;
+            top: 0px;
+            right: 0px;
+            bottom: 0px;
+            left: 0px;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+        .upload-iframe{
+            display: flex;
+            width: 100%;
+            height: 10%;
+            flex-direction: column;
+            background-color: white;
+            overflow: hidden;
+            border-style:none;
+          }
+        .okno{
+            position: fixed;
+            top: 10%;
+            right: 20%;
+            left: 20%;
+            border-style:ridge;
+            border-color:black;
+            border-radius:5px;
+            padding-bottom:2%;
+            bottom:10%;
+        }
+        .movable{
+            position:absolute;
+            z-index: 1;
+            border-style:solid;
+            border-radius:10px;
+            border-color:#ebe0cf;
+            background-color:#f6f2ec;
+        }
+        .movableHeader{
+            margin:5px;
+            cursor: move;
+            border-style:groove;
+
+        }
+        .taskHeader{
+            margin-bottom:0px;
+            border-style:outset;
+            border-radius:10px;
+        }
+        .taskFooter{
+            margin-bottom:5px;
+            padding-bottom:5px;
+            padding-top:5px;
+            border-radius:10px;
+        }
+        .taskPDF{
+            margin-bottom:0px;
+            padding:10px;
+            margin:5px;
+            border-style:inset;
+            border-radius:10px;
+        }
+        .noMargin{
+            margin-top:0px;
+            margin-bottom:0px;
+        }
+        .redBorder{
+            border-style:solid;
+            border-color:#e57373;
+            border-radius:7px;
+        }
+        .blueBorder{
+            border-style:outset;
+            border-color:#e1f5fe;
+            border-radius:7px;
+        }
+        .greenBorder{
+            border-style:solid;
+            border-color:#81c784 ;
+            border-radius:7px;
+        }
+        .orangeBorder{
+            border-style:solid;
+            border-color:#ffab91;
+            border-radius:7px;
+        }
+        .marginMinus3{
+            margin-top:-3px;
+        }
+        #datum{
+            border-style:groove;
+            border-radius:10px;
+            border-color:#F6F2EC;
+            margin-left:20px;
+            padding:5px;
+        }
+         body {
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+            overflow:auto;
+          }
+
+          main {
+            flex: 1 0 auto;
+          }
+         .full-height{
+            display: flex;
+            flex-wrap:wrap;
+            min-height: 100vh;
+            margin-bottom:0px;
+         }
+         .page-footer{
+            z-index:2;
+         }
+         .max-height10vh{
+            max-height:40vh;
+            overflow:auto;
+         }
+        #preloader{
+            background:white;
+            z-index:100;
+            height:100vh;
+            width:100%;
+            position:fixed;
+        }
+
+
+    </style>
+    <!-- jQuery link -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+
+    </script>
+    <!-- materilaze CSS script-->
+    <script th:inline="javascript" src="/js/materialize.min.js"></script>
+
+</head>
+<body>
+
+<div  id="preloader">
+    <nav><!-- navigacijska vrstica -->
+        <div id="topBorder" class="nav-wrapper z-depth-1">
+            <a href="index.html" class="brand-logo">&nbsp;ToDoApp</a>
+        </div>
+    </nav>
+    <div class="container full-height">
+        <div class="progress full-heigh" >
+            <div class="indeterminate full-heigh"></div>
+        </div>
+    </div>
+</div>
+
+<header>
+    <nav><!-- navigacijska vrstica -->
+        <div id="topBorder" class="nav-wrapper z-depth-1">
+            <a href="index.html" class="brand-logo">&nbsp;ToDoApp</a>
+            <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <!-- timeline
+                <li><a href="#">timeline<i class="material-icons medium right">timeline</i></a></li>
+                -->
+                <li id="test2"><a href="#" >dodaj opravilo<i class="material-icons medium right">add_box</i></a></li>
+            </ul>
+        </div>
+    </nav>
+
+</header>
+<!-- glavno polje -->
+<main>
+    <div class="row full-height">
+        <!-- opravilna vrstica levo za seznam opravil-->
+        <div id="noTouchLeft" class="col s2 red lighten-4 z-depth-1 ">
+            <!-- razdelitev za prikaz dnevnih opravil - opravilna vrstica odprtih opravil-->
+            <p th:text="${localDate}"></p>
+            <ul class="collection with-header">
+                <!--  odprta opravila -->
+                <li class="collection-header">OPEN TASKS </li>
+               <div class="max-height10vh">
+                <li  th:each="task : ${pendingTasks}">
+                    <div th:switch="${localDate}">
+                        <div th:case="${task.end_date}">
+                            <a href="#" th:class="'toggleTaskOff'+${task.id} +' collection-item'">[[${task.title}]]<i class="marginMinus3 small material-icons right">keyboard_arrow_left</i></a>
+                            <a href="#" th:class="'toggleTaskOn'+${task.id} +' collection-item'" style="display:none">[[${task.title}]]<i class="marginMinus3 small material-icons right">keyboard_arrow_right</i></a>
+                        </div>
+                        <div th:case="*">
+                            <a href="#" th:class="'toggleTaskOff'+${task.id} +' collection-item'" style="display:none">[[${task.title}]]<i class="marginMinus3 small material-icons right">keyboard_arrow_left</i></a>
+                            <a href="#" th:class="'toggleTaskOn'+${task.id} +' collection-item'" >[[${task.title}]]<i class="marginMinus3 small material-icons right">keyboard_arrow_right</i></a>
+                        </div>
+                    </div>
+                </li>
+               </div>
+            </ul>
+            <!-- dokoncana opravila -->
+            <ul class="collection with-header">
+                <li class="collection-header">DONE TASKS </li>
+                <div class="max-height10vh">
+                <li  th:each="task : ${doneTasks}">
+                    <a href="#" th:class="'toggleTaskOff'+${task.id} +' collection-item'" style="display:none">[[${task.title}]]<i class="marginMinus3 small material-icons right">keyboard_arrow_left</i></a>
+                    <a href="#" th:class="'toggleTaskOn'+${task.id} +' collection-item'" >[[${task.title}]]<i class="marginMinus3 small material-icons right">keyboard_arrow_right</i></a>
+                </li>
+                </div>
+            </ul>
+        </div>
+        <!-- polje za premikanje oken in opravil -->
+
+        <div id="sandbox" class="col s10">
+            <div class="container">
+                <!-- dolocanje prikaza opravil na danasnji dan -->
+                 <div th:each="task : ${pendingTasks}">
+                     <div th:switch="${localDate}">
+                         <!-- opravilo se prikaze na danasnji dan -->
+                         <div th:case="${task.end_date}">
+                             <div th:id="'move'+${task.id}" class="movable z-depth-5 " >
+                                 <!-- glava opravila -->
+                                 <div th:id="'move'+${task.id}+'Header'" class="row valign-wrapper taskHeader "  style="margin:5px;cursor: move;border-color:#F6F2EC;border-style:groove; min-width:500px;">
+                                        <div class="col s12">
+                                                <p>[[${task.title}]]</p>
+                                        </div>
+                                    </div>
+                                 <!-- datoteka opravila -->
+                                 <div th:class="'taskPDF'+${task.id}" th:if="${task.file != ''}" style="display:none; padding:0px;margin:10px;">
+                                        <iframe   th:src="${task.file}" width="100%" height="600"></iframe>
+                                    </div>
+                                 <!-- noga  opravila -->
+                                 <div class="row taskFooter valign-wrapper">
+                                        <div class="col s7 " id="datum">
+                                            <div class="row noMargin ">
+                                                <div class="col s6">
+                                                    <p class="noMargin right">datum zacetka: </p>
+                                                </div>
+                                                <div class="col s6">
+                                                    <p class="noMargin">[[${task.starting_date}]] </p>
+                                                </div>
+                                            </div>
+                                            <div class="row noMargin">
+                                                <div class="col s6">
+                                                    <p class="noMargin right">datum konca: </p>
+                                                </div>
+                                                <div class="col s6">
+                                                    <p class="noMargin">[[${task.end_date}]]</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col s5 ">
+                                            <div class="center">
+                                                <a class="btn  green lighten-3 greenBorder" th:href="@{'/done/'+${task.id}}" type="submit" name="done"><i class="marginMinus3 material-icons">check</i></a>
+                                                <a class="btn red lighten-3 redBorder" th:href="@{'/home/'+${task.id}}"><i class="marginMinus3 medium material-icons">edit</i></a>
+                                                <button class="btn  deep-orange lighten-4 orangeBorder " th:id="'pdfHide'+${task.id}" th:if="${task.file != ''}" style="display:none"><i class="marginMinus3 medium material-icons">expand_less</i></button>
+                                                <button class="btn  deep-orange lighten-4  orangeBorder" th:id="'pdfShow'+${task.id}"  th:if="${task.file != ''}" ><i class="marginMinus3 medium material-icons">expand_more</i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                             </div>
+                         </div>
+                         <!-- opravilo se ne prikaze na danasnji dan -->
+                         <div th:case="*">
+                             <div th:id="'move'+${task.id}" class="movable z-depth-5 " Style="display:none;">
+                                 <!-- glava opravila -->
+                                 <div th:id="'move'+${task.id}+'Header'" class="row valign-wrapper taskHeader "  style="margin:5px;border-color:#F6F2EC;cursor: move;border-style:groove; min-width:500px;">
+                                         <div class="col s12">
+                                             <p>[[${task.title}]]</p>
+                                         </div>
+                                     </div>
+                                 <!-- datoteka opravila -->
+                                 <div th:class="'taskPDF'+${task.id}" th:if="${task.file != ''}" style="display:none; padding:10px;margin:5px;border-style:none;border-radius:7px;">
+                                         <iframe   th:src="${task.file}"  width="100%" height="600"></iframe>
+                                     </div>
+                                 <!-- noga  opravila -->
+                                 <div class="row taskFooter valign-wrapper">
+                                         <div class="col s7 " id="datum">
+                                             <div class="row noMargin ">
+                                                 <div class="col s6">
+                                                     <p class="noMargin right">datum zacetka: </p>
+                                                 </div>
+                                                 <div class="col s6">
+                                                     <p class="noMargin">[[${task.starting_date}]] </p>
+                                                 </div>
+                                             </div>
+                                             <div class="row noMargin">
+                                                 <div class="col s6">
+                                                     <p class="noMargin right">datum konca: </p>
+                                                 </div>
+                                                 <div class="col s6">
+                                                     <p class="noMargin">[[${task.end_date}]]</p>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                         <div class="col s5 ">
+                                             <div class="center">
+                                                 <a class="btn  green lighten-3 greenBorder" th:href="@{'/done/'+${task.id}}" type="submit" name="done"><i class="marginMinus3 material-icons">check</i></a>
+                                                 <a class="btn red lighten-3 redBorder" th:href="@{'/home/'+${task.id}}"><i class="marginMinus3 medium material-icons">edit</i></a>
+                                                 <button class="btn  deep-orange lighten-4 orangeBorder " th:id="'pdfHide'+${task.id}" th:if="${task.file != ''}" style="display:none"><i class="marginMinus3 medium material-icons">expand_less</i></button>
+                                                 <button class="btn  deep-orange lighten-4  orangeBorder" th:id="'pdfShow'+${task.id}"  th:if="${task.file != ''}" ><i class="marginMinus3 medium material-icons">expand_more</i></button>
+                                             </div>
+                                         </div>
+                                     </div>
+                             </div>
+                         </div>
+                     </div>
+                </div>
+                <!-- prikaz koncanih opravil -->
+                <div th:each="task : ${doneTasks}" >
+                    <div th:id="'move'+${task.id}" class="movable z-depth-5 " style="display:none;">
+                        <!-- glava opravila -->
+                        <div th:id="'move'+${task.id}+'Header'" class="row valign-wrapper taskHeader " style="margin:5px;cursor: move;border-color:#F6F2EC;border-style:groove; min-width:500px;">
+                            <div class="col s12">
+                                <p>[[${task.title}]]</p>
+                            </div>
+                        </div>
+                        <!-- datoteka opravila -->
+                        <div th:class="'taskPDF'+${task.id}" th:if="${task.file != ''}" style="display:none">
+                            <iframe   th:src="${task.file}"  width="100%" height="600"></iframe>
+                        </div>
+                        <!-- noga  opravila -->
+                        <div class="row taskFooter valign-wrapper">
+                            <div class="col s7 " id="datum">
+                                <div class="row noMargin ">
+                                    <div class="col s6">
+                                        <p class="noMargin right">datum zacetka: </p>
+                                    </div>
+                                    <div class="col s6">
+                                        <p class="noMargin">[[${task.starting_date}]] </p>
+                                    </div>
+                                </div>
+                                <div class="row noMargin">
+                                    <div class="col s6">
+                                        <p class="noMargin right">datum konca: </p>
+                                    </div>
+                                    <div class="col s6">
+                                        <p class="noMargin">[[${task.end_date}]]</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col s5 ">
+                                <div class="center">
+                                    <a th:id="'hideOnDone'+${task.id}" class="btn  red lighten-3 redBorder" th:href="@{'/done/'+${task.id}}" type="submit" name="done"><i class="marginMinus3 material-icons">redo</i></a>
+                                    <button class="btn  deep-orange lighten-4 orangeBorder" th:id="'pdfHide'+${task.id}" th:if="${task.file != ''}" style="display:none"><i class="marginMinus3 medium material-icons">expand_less</i></button>
+                                    <button class="btn  deep-orange lighten-4 orangeBorder " th:id="'pdfShow'+${task.id}"  th:if="${task.file != ''}" ><i class="marginMinus3 medium material-icons">expand_more</i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<!-- noga spletne strani -->
+<footer id="footerOnTop" class="page-footer z-depth-2">
+</footer>
+<!-- dodajanje opravila -->
+<div class="unclickable  center" Style="display:none;" id="showAdd">
+        <div class="white okno center">
+            <!-- glava dodajanja opravila -->
+            <nav>
+                <div class="nav-wrapper">
+                    <div class="row">
+                    <a href="#" class="brand-logo center">Add Task</a>
+                    </div>
+                </div>
+            </nav>
+            <div class="container">
+                <!-- form za dodajanje opravila -->
+                <form th:action="@{/home/new}" method="post" th:object="${task}">
+                    <div class="input-field">
+                        <label for="title">Title</label>
+                        <input id=title type="text" th:field="*{title}" >
+                    </div>
+                    <!--<div class="input-field">
+                        <label for="textInput">Text input</label>
+                        <textarea id="textInput" class="materialize-textarea reset"  data-length="120" maxlength="120" Style="max-height:50%;"></textarea>
+                    </div>-->
+                    <div class=" input-field">
+                        <label for="end_date">End date</label>
+                        <input type="text" id="end_date" class="datepicker" th:field="*{datumString}">
+                    </div>
+                    <div class="file-field input-field">
+                        <iframe class="upload-iframe" th:src="@{/uploader}"></iframe>
+                    </div>
+                    <input type="hidden" th:field="*{id}">
+                    <input type="hidden" th:field="*{starting_date}">
+                    <input type="hidden" th:field="*{done}">
+                    <input type="hidden" th:field="*{file}">
+                    <button class="btn green hoverable">ADD</button>
+                    <button class="cancle btn red hoverable" type="reset"  value="reset">CANCEL</button>
+                </form>
+            </div>
+        </div>
+</div>
+    <!-- Window control-->
+    <script th:inline="javascript">
+
+        var ids = /*[[${idTasks}]]*/;
+        var indexPremiki = /*[[${pendingTasks}]]*/;
+        var zInd = ids.length + 1;
+        var z = 1;
+
+        for(let i=0; i<ids.length;i++){
+
+            var test = "move";
+            var index = [];
+            index[i] = i+1;
+            var j = ids[i].toString();
+            var idTable = [];
+            idTable[i] = ids[i];
+            var konec = test+j;
+            var hideElement = "#"+konec;
+
+
+            dragElement(document.getElementById(konec),document.getElementById("noTouchLeft"));
+
+            elementPosition(document.getElementById(konec));
+            function elementPosition(position){
+                position.style.top = (69 + (i)*50)+"px";
+                position.style.left = (13 + (i+1)*2)+"%";
+            }
+
+            function dragElement(elmnt,border) {
+                var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+                var toTop = ids.length;
+                var boxH = document.getElementById("sandbox").offsetHeight;
+                var box = document.getElementById("sandbox").offsetWidth;
+                var navBorder = document.getElementById("topBorder").offsetHeight;
+                if(document.getElementById(elmnt.id+"Header")){
+                    document.getElementById(elmnt.id+"Header").onmousedown = dragMouseDown;
+
+                } else {
+                    elmnt.onmousedown = dragMouseDown;
+                }
+
+
+
+                document.getElementById(elmnt.id).onmousedown = toTheTop;
+                document.getElementById("move"+idTable[i]).style.zIndex = "0";
+                function toTheTop(e){
+                        elmnt.style.zIndex = z.toString();
+                        z=z*2;
+                        document.getElementById("footerOnTop").style.zIndex = (z+1).toString();
+                }
+                function dragMouseDown(e){
+                    e = e || window.event;
+                    e.preventDefault();
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    document.onmouseup = closeDragElement;
+                    document.onmousemove = elementDrag;
+                }
+                function elementDrag(e){
+                    e = e || window.event;
+                    e.preventDefault();
+                    pos1 = pos3 - e.clientX;
+                    pos2 = pos4 - e.clientY;
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+
+                    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+
+                    if((elmnt.offsetTop - pos2)<navBorder){
+                        elmnt.style.top = navBorder + "px";
+                    }
+                    if( border.offsetWidth  > elmnt.offsetLeft){
+                        elmnt.style.left = (border.offsetWidth) + "px";
+                    }
+                    if((elmnt.offsetTop+elmnt.offsetHeight)>(boxH+navBorder)){
+                        elmnt.style.top = (boxH+navBorder-elmnt.offsetHeight) + "px";
+                    }
+                }
+                function closeDragElement(){
+                    document.onmouseup = null;
+                    document.onmousemove = null;
+                }
+                var pdfClass = ".taskPDF"+ids[i];
+                var buttonHide = "#pdfHide"+ids[i];
+                var buttonShow = "#pdfShow"+ids[i];
+                var taskToggleOff = ".toggleTaskOff"+ids[i];
+                var taskToggleOn = ".toggleTaskOn"+ids[i];
+                var toggleElement = "#move"+ids[i];
+                $(document).ready(function(){
+                    $(buttonHide).click(function(){
+                        $(pdfClass).hide();
+                        $(buttonHide).hide();
+                        $(buttonShow).show();
+                    });
+                    $(buttonShow).click(function(){
+                        $(pdfClass).show();
+                        if((elmnt.offsetTop+elmnt.offsetHeight)>(boxH+navBorder)){
+                            elmnt.style.top = (boxH+navBorder-elmnt.offsetHeight) + "px";
+                        }
+                        $(buttonHide).show();
+                        $(buttonShow).hide();
+                    });
+                    $(taskToggleOff).click(function(){
+                        $(toggleElement).hide();
+                        $(taskToggleOff).hide();
+                        $(taskToggleOn).show();
+                    });
+                    $(taskToggleOn).click(function(){
+                        $(toggleElement).show();
+                        $(taskToggleOff).show();
+                        $(taskToggleOn).hide();
+                    });
+
+                });
+            }
+        }
+    </script>
+    <!-- odpiranje in zapiranje okna za dodajanje opravil -->
+    <script th:inline="javascript">
+        $(document).ready(function(){
+            $("#test2").click(function(){
+                $("#showAdd").show();
+            });
+            $(".cancle").click(function(){
+                $("#showAdd").hide();
+            });
+            $('.datepicker').datepicker();
+            $('textarea#textInput').characterCounter();
+        });
+    </script>
+<!-- preloader -->
+<script th:inline="javascript">
+    var loader = document.getElementById("preloader");
+    window.addEventListener("load", function(){
+        loader.style.display="none";
+    });
+</script>
+ </body>
+</html>
